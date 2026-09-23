@@ -1,0 +1,305 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Simulação de tomada de decisão — Módulos 1 e 2</title>
+<style>
+:root{--n:#07366f;--o:#f58220;--bg:#f4f7fb;--g:#176b3a;--r:#a12b2b;--mut:#667284}
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:var(--bg);color:#182333;line-height:1.5}
+header{background:linear-gradient(120deg,#052d5d,#084887);color:white;padding:34px 20px;border-bottom:7px solid var(--o)}
+.wrap,main{max-width:1000px;margin:auto}
+h1{margin:0 0 6px;font-size:clamp(28px,4vw,40px)}
+main{padding:24px 16px 50px}
+.card,.intro,.result{background:white;border-radius:14px;padding:20px;margin-bottom:17px;box-shadow:0 4px 16px #00000012}
+h2,h3{color:var(--n)}
+.badge{display:inline-block;background:#eef4fb;color:var(--n);border-radius:20px;padding:5px 10px;font-size:13px;font-weight:bold}
+.case{border-left:6px solid var(--o)}
+.opt{display:block;border:1px solid #d9e0ea;border-radius:9px;padding:10px 12px;margin:8px 0;cursor:pointer}
+.opt:hover{background:#f7f9fc}
+.fb{display:none;margin-top:12px;padding:12px;border-radius:8px}
+.ok{display:block;background:#eaf7ef;color:var(--g)}
+.bad{display:block;background:#fff0f0;color:var(--r)}
+.actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:16px}
+button{border:0;border-radius:9px;padding:12px 17px;font-weight:bold;cursor:pointer}
+.primary{background:var(--n);color:white}
+.secondary{background:#e5eaf1;color:#182333}
+.orange{background:var(--o);color:white}
+.hidden{display:none}
+.progressbg{height:10px;background:#e2e7ee;border-radius:10px;overflow:hidden;margin:12px 0 20px}
+.progress{height:100%;background:var(--o);width:0;transition:.3s}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px}
+.choice{border:2px solid #d9e0ea;border-radius:10px;padding:12px;cursor:pointer;background:white}
+.choice.selected{border-color:var(--n);background:#eef4fb}
+.rankitem{padding:10px;border:1px solid #d9e0ea;border-radius:8px;margin:7px 0;background:#fff}
+.rankitem select{float:right}
+textarea{width:100%;min-height:90px;border:1px solid #ccd5e1;border-radius:9px;padding:10px;font:inherit}
+.result{border-left:6px solid var(--o)}
+.score{font-size:28px;font-weight:800;color:var(--n)}
+.small{color:var(--mut);font-size:14px}
+table{width:100%;border-collapse:collapse;margin-top:10px}
+th,td{border-bottom:1px solid #e2e7ee;padding:9px;text-align:left}
+th{color:var(--n)}
+footer{text-align:center;color:#667284;padding:20px}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+<h1>Simulação de tomada de decisão</h1>
+<p><b>Módulos 1 e 2</b></p>
+</div></header>
+<main>
+<section class="intro">
+<h2>Objetivo da atividade</h2>
+<p>Nesta atividade você assumirá o papel de <b>CIO/Gestor de TI</b> de uma organização fictícia. Sua missão será analisar situações, relacionar planejamento e estratégia, identificar problemas de alinhamento entre negócio e TI e tomar decisões para melhorar a contribuição da TI para os objetivos organizacionais.</p>
+<p>A atividade integra conteúdos dos Módulos 1 e 2. Leia cada situação com atenção e tome suas decisões com base nos conceitos estudados. Algumas etapas possuem resposta conceitual esperada; outras exigem análise e justificativa.</p>
+<div class="progressbg"><div id="progress" class="progress"></div></div>
+<p class="small" id="progtext">Etapa 1 de 6</p>
+</section>
+
+<section class="card case">
+<span class="badge">Cenário organizacional</span>
+<h2>Empresa Horizonte</h2>
+<p>A Empresa Horizonte pretende ampliar sua presença nos canais digitais, melhorar a experiência dos clientes e reduzir o tempo de atendimento. A direção considera essas prioridades importantes para os próximos anos.</p>
+<p>A área de TI, entretanto, tem definido parte de seus projetos principalmente a partir de necessidades técnicas. Entre as iniciativas discutidas estão atualização de equipamentos, modernização da infraestrutura e aquisição de novas ferramentas. A participação das áreas de negócio nas decisões de TI ainda é limitada, existem poucas métricas compartilhadas e nem sempre os projetos de TI são relacionados explicitamente aos objetivos organizacionais.</p>
+<p>Você acaba de assumir a função de <b>CIO/Gestor de TI</b>. A direção solicita um diagnóstico e um conjunto inicial de decisões para melhorar o planejamento e o alinhamento estratégico.</p>
+</section>
+
+<div id="stages"></div>
+
+<section id="final" class="result hidden">
+<h2>Resultado da simulação</h2>
+<div id="finalscore" class="score"></div>
+<p id="finalmsg"></p>
+<div id="diagnostico"></div>
+<h3>Sua reflexão como CIO</h3>
+<p id="reflexao"></p>
+<div class="actions"><button class="secondary" onclick="reiniciar()">Refazer simulação</button></div>
+</section>
+</main>
+<footer>Planejamento e Gestão Estratégica de TI • Módulos 1 e 2</footer>
+
+<script>
+const stages=[
+{
+ title:"Etapa 1 — Pensar estrategicamente",
+ intro:"A direção definiu: “ampliar a presença nos canais digitais e melhorar a experiência dos clientes”. Qual interpretação está mais coerente com o planejamento estratégico?",
+ type:"single", correct:1,
+ opts:[
+ "É uma atividade operacional que deve ser executada diretamente pela equipe técnica.",
+ "Representa um direcionamento para uma situação futura desejada, que deverá orientar objetivos, metas e ações.",
+ "É apenas uma necessidade de aquisição de tecnologia.",
+ "Substitui a necessidade de analisar a situação atual da organização."
+ ],
+ exp:"O planejamento estratégico considera a situação atual, o estado futuro desejado e os meios necessários para alcançá-lo. O direcionamento estratégico deve orientar decisões e ações posteriores."
+},
+{
+ title:"Etapa 2 — Diferencie os níveis de planejamento",
+ intro:"Classifique cada decisão no nível que melhor representa seu foco.",
+ type:"classify",
+ items:[
+ ["Ampliar a presença digital da organização nos próximos anos.","Estratégico"],
+ ["Implantar uma plataforma integrada de atendimento para apoiar o objetivo definido.","Tático"],
+ ["Configurar estações de trabalho da equipe que utilizará a nova plataforma.","Operacional"]
+ ],
+ exp:"O nível estratégico considera a organização e seus objetivos mais amplos; o tático desdobra esses objetivos para áreas e iniciativas; o operacional detalha atividades e execução cotidiana."
+},
+{
+ title:"Etapa 3 — Construa o alinhamento PEN × PETI",
+ intro:"O PEN estabelece como prioridade melhorar a experiência do cliente. Selecione as iniciativas de TI que apresentam relação estratégica justificável com esse objetivo. Selecione três.",
+ type:"multi", correct:[0,2,4],
+ opts:[
+ "Implantar uma solução integrada para informações de atendimento e relacionamento com clientes.",
+ "Substituir equipamentos apenas porque existe um modelo mais recente, sem análise de necessidade.",
+ "Definir indicadores para acompanhar disponibilidade e desempenho dos serviços digitais utilizados pelos clientes.",
+ "Adquirir uma ferramenta porque outra organização a utiliza, sem relacioná-la aos objetivos da Empresa Horizonte.",
+ "Integrar informações de atendimento e vendas para apoiar decisões e melhorar a experiência do cliente."
+ ],
+ exp:"O alinhamento entre PEN e PETI exige que recursos, projetos e decisões de TI estejam relacionados aos objetivos do negócio. Tecnologia, por si só, não caracteriza alinhamento estratégico."
+},
+{
+ title:"Etapa 4 — Promotor ou inibidor?",
+ intro:"Classifique cada situação de acordo com seu efeito sobre o alinhamento estratégico.",
+ type:"promoters",
+ items:[
+ ["A alta gestão apoia os assuntos relacionados à TI.","Promotor"],
+ ["Existem relações fracas entre negócio e TI.","Inibidor"],
+ ["A TI participa do desenvolvimento da estratégia do negócio.","Promotor"],
+ ["A TI não compreende adequadamente o negócio.","Inibidor"],
+ ["Os projetos de TI são bem priorizados.","Promotor"],
+ ["A liderança de TI é fraca.","Inibidor"]
+ ],
+ exp:"O desenvolvimento do alinhamento estratégico requer maximizar os fatores promotores e minimizar os fatores inibidores."
+},
+{
+ title:"Etapa 5 — Diagnóstico de maturidade",
+ intro:"Relacione cada critério de maturidade de Luftman à definição que melhor representa sua aplicação no alinhamento entre negócio e TI.",
+ type:"maturity",
+ items:[
+ ["Comunicação","Troca de ideias, conhecimento e informações entre TI e as demais áreas, permitindo entendimento comum das estratégias, prioridades, ambientes de negócio e de TI e do que precisa ser realizado"],
+ ["Medidas de valor e competência","Definição de métricas comuns e claras para demonstrar a contribuição e o desempenho da TI e do negócio, utilizando avaliações, comparações e aperfeiçoamento contínuo"],
+ ["Governança","Definição e compartilhamento do grau de autoridade para as decisões de TI, com clareza sobre o poder de decisão e participação das gerências na definição de prioridades e na alocação dos recursos de TI"],
+ ["Parceria","Relacionamento entre TI e as áreas de negócio, com envolvimento da TI na definição das estratégias, confiança entre as áreas e reconhecimento mútuo de suas contribuições"],
+ ["Escopo e arquitetura","Abrangência e efetividade da arquitetura de TI para atender às necessidades do negócio, oferecendo infraestrutura flexível, avaliando tecnologias e apoiando ou conduzindo processos de negócio"],
+ ["Habilidades","Ambiente social e cultural que favoreça interação, troca de conhecimentos, aprendizado, inovação e prontidão para mudanças, incluindo treinamento, avaliação de resultados e desenvolvimento das pessoas"]
+ ],
+ exp:"No modelo de Luftman, a maturidade do alinhamento é avaliada por seis critérios: comunicação; medidas de valor e competência; governança; parceria; escopo e arquitetura; e habilidades. Os níveis evoluem de processos iniciais ou sob demanda até processos otimizados."
+},
+{
+ title:"Etapa 6 — Você é o CIO",
+ intro:"Selecione as cinco ações que você priorizaria para melhorar o alinhamento da Empresa Horizonte. Depois, registre uma breve justificativa para sua decisão.",
+ type:"cio", correct:[0,1,2,3,4],
+ opts:[
+ "Estabelecer participação da TI nas discussões da estratégia do negócio.",
+ "Criar mecanismos de comunicação periódica entre TI e áreas de negócio.",
+ "Relacionar e priorizar projetos de TI de acordo com objetivos organizacionais.",
+ "Definir métricas para demonstrar a contribuição da TI para o negócio.",
+ "Fortalecer a parceria entre gestores de negócio e TI.",
+ "Priorizar aquisições tecnológicas apenas pela novidade da tecnologia.",
+ "Concentrar decisões de TI exclusivamente na equipe técnica.",
+ "Separar o PETI das prioridades estabelecidas no PEN."
+ ],
+ exp:"As ações mais coerentes fortalecem participação, comunicação, priorização, mensuração de valor e parceria entre negócio e TI. O CIO deve conhecer o negócio e acompanhar a integração da TI com os diferentes níveis de planejamento."
+}
+];
+
+let current=0, scores=Array(stages.length).fill(null);
+
+function render(){
+ const box=document.getElementById("stages"); box.innerHTML="";
+ stages.forEach((s,i)=>{
+   const sec=document.createElement("section"); sec.className="card stage "+(i===0?"":"hidden"); sec.id="stage"+i;
+   let h=`<span class="badge">${i+1}/6</span><h2>${s.title}</h2><p>${s.intro}</p>`;
+   if(s.type==="single"){
+     h+=s.opts.map((o,j)=>`<label class="opt"><input type="radio" name="s${i}" value="${j}"> <b>${String.fromCharCode(97+j)})</b> ${o}</label>`).join("");
+   } else if(s.type==="multi"||s.type==="cio"){
+     h+=`<div class="grid">`+s.opts.map((o,j)=>`<label class="choice"><input type="checkbox" name="s${i}" value="${j}"> ${o}</label>`).join("")+`</div>`;
+     if(s.type==="cio") h+=`<h3>Justificativa</h3>
+<p>Após selecionar as cinco ações, escolha a justificativa que melhor explica sua decisão.</p>
+<label class="opt"><input type="radio" name="justCio" value="0"> <b>a)</b> Porque essas ações aproximam TI e negócio, relacionam os projetos de TI aos objetivos organizacionais, fortalecem a comunicação e a parceria e permitem avaliar a contribuição da TI.</label>
+<label class="opt"><input type="radio" name="justCio" value="1"> <b>b)</b> Porque o alinhamento estratégico depende principalmente da aquisição de tecnologias mais recentes, independentemente das prioridades definidas pelo negócio.</label>
+<label class="opt"><input type="radio" name="justCio" value="2"> <b>c)</b> Porque a área de TI deve concentrar as decisões estratégicas e reduzir a participação das demais áreas para tornar o processo mais rápido.</label>
+<label class="opt"><input type="radio" name="justCio" value="3"> <b>d)</b> Porque o PETI deve estabelecer suas próprias prioridades, mesmo quando elas não apresentam relação direta com os objetivos definidos no PEN.</label>`;
+   } else if(s.type==="classify"||s.type==="promoters"){
+     const options=s.type==="classify"?["Estratégico","Tático","Operacional"]:["Promotor","Inibidor"];
+     h+=s.items.map((it,j)=>`<div class="rankitem">${it[0]}<select id="sel${i}_${j}"><option value="">Selecione</option>${options.map(o=>`<option>${o}</option>`).join("")}</select><div style="clear:both"></div></div>`).join("");
+   } else if(s.type==="maturity"){
+     h+=`<p class="small">Para cada critério, escolha a descrição correspondente.</p>`+
+       s.items.map((it,j)=>{
+         let shuffled=[...s.items.map(x=>x[1])].sort((a,b)=>((a.length+j*7)%17)-((b.length+j*7)%17));
+         return `<div class="rankitem"><b>${it[0]}</b><br><select id="sel${i}_${j}" class="maturity-select" onchange="atualizarOpcoesMaturidade()" style="float:none;width:100%;margin-top:7px"><option value="">Selecione a característica</option>${shuffled.map(o=>`<option>${o}</option>`).join("")}</select></div>`;
+       }).join("");
+   }
+   h+=`<div class="actions"><button class="primary" onclick="corrigir(${i})">Confirmar decisão</button></div><div id="fb${i}" class="fb"></div>`;
+   sec.innerHTML=h; box.appendChild(sec);
+ });
+ document.querySelectorAll(".choice input").forEach(x=>x.addEventListener("change",e=>e.target.closest(".choice").classList.toggle("selected",e.target.checked)));
+ updateProgress();
+}
+
+
+function melhorResposta(s){
+ if(s.type==="single"){
+   return `<br><br><b>Melhor resposta:</b> <b>${String.fromCharCode(97+s.correct)})</b> ${s.opts[s.correct]}`;
+ }
+ if(s.type==="multi" || s.type==="cio"){
+   let extra = "";
+   if(s.type==="cio") extra = `<br><b>Melhor justificativa:</b> Porque essas ações aproximam TI e negócio, relacionam os projetos de TI aos objetivos organizacionais, fortalecem a comunicação e a parceria e permitem avaliar a contribuição da TI.`;
+   return `<br><br><b>Melhor resposta:</b><ul>${s.correct.map(j=>`<li>${s.opts[j]}</li>`).join("")}</ul>${extra}`;
+ }
+ if(s.type==="classify" || s.type==="promoters" || s.type==="maturity"){
+   return `<br><br><b>Melhor resposta:</b><ul>${s.items.map(it=>`<li><b>${it[0]}:</b> ${it[1]}</li>`).join("")}</ul>`;
+ }
+ return "";
+}
+
+
+function atualizarOpcoesMaturidade(){
+  const selects=[...document.querySelectorAll("#stage4 .maturity-select")];
+  const selecionados=selects.map(s=>s.value).filter(Boolean);
+
+  selects.forEach(sel=>{
+    const atual=sel.value;
+    [...sel.options].forEach(opt=>{
+      if(!opt.value) return;
+      // A definição escolhida em outro critério deixa de aparecer
+      // como opção disponível nos campos seguintes/restantes.
+      opt.hidden = selecionados.includes(opt.value) && opt.value !== atual;
+      opt.disabled = selecionados.includes(opt.value) && opt.value !== atual;
+    });
+  });
+}
+
+function corrigir(i){
+ const s=stages[i], fb=document.getElementById("fb"+i); let ok=false, answered=true;
+ if(s.type==="single"){
+   const z=document.querySelector(`input[name=s${i}]:checked`);
+   if(!z) answered=false; else ok=(+z.value===s.correct);
+ } else if(s.type==="multi"||s.type==="cio"){
+   const vals=[...document.querySelectorAll(`input[name=s${i}]:checked`)].map(x=>+x.value).sort((a,b)=>a-b);
+   if(vals.length===0) answered=false;
+   else if(s.type==="cio" && vals.length!==5){fb.className="fb bad";fb.innerHTML="<b>Selecione exatamente cinco ações.</b>";return}
+   else if(s.type==="cio"){
+     const just=document.querySelector('input[name="justCio"]:checked');
+     if(!just){fb.className="fb bad";fb.innerHTML="<b>Selecione também uma justificativa para as ações priorizadas.</b>";return}
+     ok=JSON.stringify(vals)===JSON.stringify([...s.correct].sort((a,b)=>a-b)) && +just.value===0;
+   }
+   else ok=JSON.stringify(vals)===JSON.stringify([...s.correct].sort((a,b)=>a-b));
+ } else {
+   let good=0;
+   s.items.forEach((it,j)=>{const el=document.getElementById(`sel${i}_${j}`);if(!el.value) answered=false;if(el.value===it[1]) good++});
+   ok=good===s.items.length;
+ }
+ if(!answered){fb.className="fb bad";fb.innerHTML="<b>Complete esta etapa antes de confirmar.</b>";return}
+ scores[i]=ok?1:0;
+ fb.className="fb "+(ok?"ok":"bad");
+ if(ok){
+   fb.innerHTML="<b>✓ Decisão coerente.</b><br><b>Justificativa:</b> "+s.exp+
+   `<div class="actions"><button class="orange" onclick="proxima(${i})">${i===stages.length-1?"Concluir simulação":"Avançar para a próxima etapa"}</button></div>`;
+ }else{
+   fb.innerHTML="<b>✗ A decisão selecionada não é a mais adequada.</b>"+
+   melhorResposta(s)+
+   "<br><br><b>Justificativa:</b> "+s.exp+
+   `<div class="actions"><button class="orange" onclick="proxima(${i})">${i===stages.length-1?"Concluir simulação":"Avançar para a próxima etapa"}</button></div>`;
+ }
+}
+
+function proxima(i){
+ if(i===stages.length-1){finalizar();return}
+ document.getElementById("stage"+i).classList.add("hidden");
+ current=i+1; document.getElementById("stage"+current).classList.remove("hidden");
+ updateProgress(); window.scrollTo({top:0,behavior:"smooth"});
+}
+function updateProgress(){
+ const pct=((current)/stages.length)*100;
+ document.getElementById("progress").style.width=pct+"%";
+ document.getElementById("progtext").textContent=`Etapa ${Math.min(current+1,6)} de 6`;
+}
+function finalizar(){
+ document.getElementById("stage5").classList.add("hidden");
+ document.getElementById("progress").style.width="100%";
+ document.getElementById("progtext").textContent="Simulação concluída";
+ const total=scores.reduce((a,b)=>a+(b||0),0);
+ document.getElementById("finalscore").textContent=`Decisões conceitualmente alinhadas: ${total} de 6`;
+ let msg=total>=5?"Você demonstrou boa integração entre os conceitos de planejamento e alinhamento estratégico.":total>=3?"Você aplicou parte dos conceitos adequadamente. Revise os feedbacks das etapas em que houve divergência.":"Revise os conceitos dos Módulos 1 e 2 e refaça a simulação, observando a relação entre objetivos do negócio e decisões de TI.";
+ document.getElementById("finalmsg").textContent=msg;
+ document.getElementById("diagnostico").innerHTML=`<h3>Competências trabalhadas</h3><table>
+ <tr><th>Dimensão</th><th>Aplicação na simulação</th></tr>
+ <tr><td>Planejamento estratégico</td><td>Situação atual, futuro desejado e direcionamento das ações.</td></tr>
+ <tr><td>Níveis de planejamento</td><td>Distinção entre decisões estratégicas, táticas e operacionais.</td></tr>
+ <tr><td>PEN × PETI</td><td>Relação entre objetivos do negócio e iniciativas de TI.</td></tr>
+ <tr><td>Alinhamento</td><td>Reconhecimento de promotores e inibidores.</td></tr>
+ <tr><td>Maturidade</td><td>Aplicação dos critérios do modelo de Luftman.</td></tr>
+ <tr><td>Papel do CIO</td><td>Priorização de ações para aproximar negócio e TI.</td></tr></table>`;
+ const just=document.querySelector('input[name="justCio"]:checked');
+ const justText=just?just.closest("label").textContent.replace(/^\s*[a-d]\)\s*/,"").trim():"Justificativa não selecionada.";
+ document.getElementById("reflexao").textContent=justText;
+ document.getElementById("final").classList.remove("hidden");
+ document.getElementById("final").scrollIntoView({behavior:"smooth"});
+}
+function reiniciar(){scores=Array(stages.length).fill(null);current=0;document.getElementById("final").classList.add("hidden");render();window.scrollTo({top:0,behavior:"smooth"})}
+render();
+</script>
+</body>
+</html>
